@@ -75,7 +75,7 @@ echo "Step 1: Running MMseqs searches and per-target scoring..."
 # SEQUENTIAL EXECUTION (current default)
 echo "  Processing $N_SPLITS chunks sequentially..."
 for chunk_id in $(seq 0 $((N_SPLITS-1))); do
-    ./run_search.sh $chunk_id $N_SPLITS
+    /home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh $chunk_id $N_SPLITS
 done
 
 echo "  All chunks processed!"
