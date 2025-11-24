@@ -62,21 +62,22 @@ echo "Step 1: Running MMseqs searches and per-target scoring..."
 # ============================================================================
 # PARALLEL EXECUTION SECTION
 #
-# To run chunks in parallel instead of sequentially, replace the sequential
-# loop below with one of these parallel approaches:
-#
-# Slurm job array (for cluster environments)
-# Create a separate slurm script that calls: ./run_search.sh $SLURM_ARRAY_TASK_ID $N_SPLITS
-# Then submit with: sbatch --array=0-$((N_SPLITS-1)) your_slurm_script.sh
-#
-# wait  # Wait for all background jobs to complete
+# Running all chunks in parallel as background jobs
+# For cluster environments, consider using Slurm job arrays instead:
+#   sbatch --array=0-$((N_SPLITS-1)) your_slurm_script.sh
 # ============================================================================
 
-# SEQUENTIAL EXECUTION (current default)
-echo "  Processing $N_SPLITS chunks sequentially..."
+# Get the script directory for relative path
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# PARALLEL EXECUTION
+echo "  Launching $N_SPLITS chunks in parallel..."
 for chunk_id in $(seq 0 $((N_SPLITS-1))); do
-    /home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh $chunk_id $N_SPLITS
+    "$SCRIPT_DIR/run_search.sh" $chunk_id $N_SPLITS &
 done
+
+echo "  Waiting for all chunks to complete..."
+wait  # Wait for all background jobs to complete
 
 echo "  All chunks processed!"
 echo
