@@ -60,40 +60,36 @@ echo
 echo "Step 1: Running MMseqs searches and per-target scoring..."
 
 # ============================================================================
-# PARALLEL EXECUTION SECTION (BATCHED)
+# PARALLEL EXECUTION SECTION (SLURM BATCH JOBS)
 #
-# Running chunks in batches to avoid OOM (Out of Memory) issues
-# Process 64 chunks at a time, wait for batch completion before next batch
-# For cluster environments, consider using Slurm job arrays instead:
-#   sbatch --array=0-$((N_SPLITS-1)) your_slurm_script.sh
+# Submit batches as SLURM jobs
+# Each batch job processes BATCH_SIZE chunks in parallel
 # ============================================================================
 
-BATCH_SIZE=32
+BATCH_SIZE=64
 TOTAL_BATCHES=$(( (N_SPLITS + BATCH_SIZE - 1) / BATCH_SIZE ))
 
-echo "  Processing $N_SPLITS chunks in batches of $BATCH_SIZE ($TOTAL_BATCHES batches total)..."
+echo "  Submitting $N_SPLITS chunks as $TOTAL_BATCHES SLURM batch jobs (batch size: $BATCH_SIZE)..."
 
-for batch_num in $(seq 0 $((TOTAL_BATCHES-1))); do
-    batch_start=$((batch_num * BATCH_SIZE))
-    batch_end=$((batch_start + BATCH_SIZE - 1))
-    
-    # Don't exceed N_SPLITS
-    if [ $batch_end -ge $N_SPLITS ]; then
-        batch_end=$((N_SPLITS - 1))
-    fi
-    
-    batch_size=$((batch_end - batch_start + 1))
-    echo "  Batch $((batch_num + 1))/$TOTAL_BATCHES: Launching chunks $batch_start-$batch_end ($batch_size chunks)..."
-    
-    # Launch all chunks in this batch in parallel
-    for chunk_id in $(seq $batch_start $batch_end); do
-        "/home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh" $chunk_id $N_SPLITS &
-    done
-    
-    # Wait for this batch to complete before starting next batch
-    echo "    Waiting for batch $((batch_num + 1)) to complete..."
-    wait
-    echo "    Batch $((batch_num + 1)) completed!"
+# Submit job array: one job per batch
+JOB_ID=$(sbatch --parsable --array=0-$((TOTAL_BATCHES-1)) \
+    "/home/s5h/mrpython.s5h/projects/uniref-exploration/run_batch_slurm.sh" $BATCH_SIZE $N_SPLITS)
+
+echo "  Submitted SLURM job array: Job ID $JOB_ID"
+echo "  Number of batch jobs: $TOTAL_BATCHES"
+echo "  Chunks per batch: $BATCH_SIZE"
+echo "  Monitor progress with: squeue -j $JOB_ID"
+echo "  Check logs in: logs/batch_*.out"
+echo
+
+# Wait for all batch jobs to complete
+echo "  Waiting for all batches to complete..."
+while squeue -j $JOB_ID 2>/dev/null | grep -q $JOB_ID; do
+    # Count completed chunks by checking for output files
+    completed=$(ls -1 results/per_target/target_split_*_${N_SPLITS}.tsv 2>/dev/null | wc -l)
+    completed_batches=$(( completed / BATCH_SIZE ))
+    echo "    Progress: $completed/$N_SPLITS chunks completed (~$completed_batches/$TOTAL_BATCHES batches)..."
+    sleep 30
 done
 
 echo "  All chunks processed!"
