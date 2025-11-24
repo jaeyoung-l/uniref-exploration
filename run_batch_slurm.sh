@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=mmseqs_batch
-#SBATCH --output=logs/batch_%a.out
-#SBATCH --error=logs/batch_%a.err
+#SBATCH --output=/scratch/s5h/mrpython.s5h/output/uniref-exploration/logs/batch_%a.out
+#SBATCH --error=/scratch/s5h/mrpython.s5h/output/uniref-exploration/logs/batch_%a.err
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=32
 #SBATCH --mem=256G
