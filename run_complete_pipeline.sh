@@ -60,24 +60,41 @@ echo
 echo "Step 1: Running MMseqs searches and per-target scoring..."
 
 # ============================================================================
-# PARALLEL EXECUTION SECTION
+# PARALLEL EXECUTION SECTION (BATCHED)
 #
-# Running all chunks in parallel as background jobs
+# Running chunks in batches to avoid OOM (Out of Memory) issues
+# Process 64 chunks at a time, wait for batch completion before next batch
 # For cluster environments, consider using Slurm job arrays instead:
 #   sbatch --array=0-$((N_SPLITS-1)) your_slurm_script.sh
 # ============================================================================
 
-# Get the script directory for relative path
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+BATCH_SIZE=64
+TOTAL_BATCHES=$(( (N_SPLITS + BATCH_SIZE - 1) / BATCH_SIZE ))
 
-# PARALLEL EXECUTION
-echo "  Launching $N_SPLITS chunks in parallel..."
-for chunk_id in $(seq 0 $((N_SPLITS-1))); do
-    "/home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh" $chunk_id $N_SPLITS &
+echo "  Processing $N_SPLITS chunks in batches of $BATCH_SIZE ($TOTAL_BATCHES batches total)..."
+
+for batch_num in $(seq 0 $((TOTAL_BATCHES-1))); do
+    batch_start=$((batch_num * BATCH_SIZE))
+    batch_end=$((batch_start + BATCH_SIZE - 1))
+    
+    # Don't exceed N_SPLITS
+    if [ $batch_end -ge $N_SPLITS ]; then
+        batch_end=$((N_SPLITS - 1))
+    fi
+    
+    batch_size=$((batch_end - batch_start + 1))
+    echo "  Batch $((batch_num + 1))/$TOTAL_BATCHES: Launching chunks $batch_start-$batch_end ($batch_size chunks)..."
+    
+    # Launch all chunks in this batch in parallel
+    for chunk_id in $(seq $batch_start $batch_end); do
+        "/home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh" $chunk_id $N_SPLITS &
+    done
+    
+    # Wait for this batch to complete before starting next batch
+    echo "    Waiting for batch $((batch_num + 1)) to complete..."
+    wait
+    echo "    Batch $((batch_num + 1)) completed!"
 done
-
-echo "  Waiting for all chunks to complete..."
-wait  # Wait for all background jobs to complete
 
 echo "  All chunks processed!"
 echo
