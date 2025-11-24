@@ -68,7 +68,7 @@ echo "Step 1: Running MMseqs searches and per-target scoring..."
 #   sbatch --array=0-$((N_SPLITS-1)) your_slurm_script.sh
 # ============================================================================
 
-BATCH_SIZE=64
+BATCH_SIZE=32
 TOTAL_BATCHES=$(( (N_SPLITS + BATCH_SIZE - 1) / BATCH_SIZE ))
 
 echo "  Processing $N_SPLITS chunks in batches of $BATCH_SIZE ($TOTAL_BATCHES batches total)..."
