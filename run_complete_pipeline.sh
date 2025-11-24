@@ -3,7 +3,7 @@ set -euo pipefail
 
 # Complete MMseqs2 filtering pipeline for development/testing
 # Runs from scratch starting with FASTA files in data/ directory
-WORKDIR="/workspace/filtering"
+WORKDIR="/scratch/s5h/mrpython.s5h/output/uniref-exploration"
 cd "$WORKDIR"
 
 echo "=== MMseqs2 Filtering Pipeline ==="
@@ -45,7 +45,7 @@ else
 fi
 
 # Split target database into chunks
-N_SPLITS=4  # Adjust for production (e.g., 128 for large datasets)
+N_SPLITS=128  # Adjust for production (e.g., 128 for large datasets)
 if [ ! -f "mmseqs_db/target_chunks/target_split_0_${N_SPLITS}" ]; then
     echo "  Splitting target database into $N_SPLITS chunks..."
     mmseqs splitdb mmseqs_db/targetDB mmseqs_db/target_chunks/target_split --split $N_SPLITS

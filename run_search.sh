@@ -14,7 +14,7 @@ fi
 CHUNK_ID=$1
 N_SPLITS=${2:-4}
 
-WORKDIR="/workspace/filtering"
+WORKDIR="/scratch/s5h/mrpython.s5h/output/uniref-exploration"
 cd "$WORKDIR"
 
 CHUNK_NAME="target_split_${CHUNK_ID}_${N_SPLITS}"
