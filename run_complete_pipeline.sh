@@ -73,7 +73,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # PARALLEL EXECUTION
 echo "  Launching $N_SPLITS chunks in parallel..."
 for chunk_id in $(seq 0 $((N_SPLITS-1))); do
-    "$SCRIPT_DIR/run_search.sh" $chunk_id $N_SPLITS &
+    "/home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh" $chunk_id $N_SPLITS &
 done
 
 echo "  Waiting for all chunks to complete..."
