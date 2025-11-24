@@ -66,7 +66,7 @@ echo "Step 1: Running MMseqs searches and per-target scoring..."
 # Each batch job processes BATCH_SIZE chunks in parallel
 # ============================================================================
 
-BATCH_SIZE=64
+BATCH_SIZE=32  # Match with SLURM cpus-per-task
 TOTAL_BATCHES=$(( (N_SPLITS + BATCH_SIZE - 1) / BATCH_SIZE ))
 
 echo "  Submitting $N_SPLITS chunks as $TOTAL_BATCHES SLURM batch jobs (batch size: $BATCH_SIZE)..."
@@ -84,15 +84,35 @@ echo
 
 # Wait for all batch jobs to complete
 echo "  Waiting for all batches to complete..."
+echo "  Logging to: logs/batch_*.out and logs/chunk_*.log"
+echo
+last_completed=0
 while squeue -j $JOB_ID 2>/dev/null | grep -q $JOB_ID; do
     # Count completed chunks by checking for output files
     completed=$(ls -1 results/per_target/target_split_*_${N_SPLITS}.tsv 2>/dev/null | wc -l)
     completed_batches=$(( completed / BATCH_SIZE ))
-    echo "    Progress: $completed/$N_SPLITS chunks completed (~$completed_batches/$TOTAL_BATCHES batches)..."
+    percent=$(( completed * 100 / N_SPLITS ))
+    
+    # Show progress update
+    if [ $completed -ne $last_completed ]; then
+        timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+        echo "    [$timestamp] Progress: $completed/$N_SPLITS chunks ($percent%) - ~$completed_batches/$TOTAL_BATCHES batches"
+        last_completed=$completed
+    fi
+    
     sleep 30
 done
 
-echo "  All chunks processed!"
+# Final verification
+echo
+echo "  All SLURM jobs finished. Verifying results..."
+completed=$(ls -1 results/per_target/target_split_*_${N_SPLITS}.tsv 2>/dev/null | wc -l)
+if [ $completed -eq $N_SPLITS ]; then
+    echo "  ✓ All $N_SPLITS chunks completed successfully!"
+else
+    echo "  ✗ WARNING: Only $completed/$N_SPLITS chunks completed!"
+    echo "  Check logs in logs/ directory for failed chunks"
+fi
 echo
 
 # Step 2: Compute threshold and generate final flags

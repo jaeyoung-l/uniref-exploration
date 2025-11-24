@@ -45,13 +45,32 @@ echo "=========================================="
 
 # Launch all chunks in this batch in parallel
 for chunk_id in $(seq $batch_start $batch_end); do
-    echo "  Launching chunk $chunk_id..."
-    "/home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh" $chunk_id $N_SPLITS &
+    chunk_log="logs/chunk_${chunk_id}_of_${N_SPLITS}.log"
+    echo "  Launching chunk $chunk_id (log: $chunk_log)..."
+    "/home/s5h/mrpython.s5h/projects/uniref-exploration/run_search.sh" $chunk_id $N_SPLITS \
+        > "$chunk_log" 2>&1 &
 done
 
 # Wait for all chunks in this batch to complete
 echo "  Waiting for all $batch_size chunks to complete..."
 wait
+
+# Check if all chunks succeeded
+echo "  Verifying chunk outputs..."
+failed_chunks=0
+for chunk_id in $(seq $batch_start $batch_end); do
+    score_file="results/per_target/target_split_${chunk_id}_${N_SPLITS}.tsv"
+    if [ ! -f "$score_file" ]; then
+        echo "  WARNING: Chunk $chunk_id failed - missing output: $score_file"
+        echo "  Check log: logs/chunk_${chunk_id}_of_${N_SPLITS}.log"
+        failed_chunks=$((failed_chunks + 1))
+    fi
+done
+
+if [ $failed_chunks -gt 0 ]; then
+    echo "  ERROR: $failed_chunks chunks failed in this batch!"
+    exit 1
+fi
 
 echo "=========================================="
 echo "Batch $BATCH_NUM completed successfully!"
