@@ -45,7 +45,7 @@ else
 fi
 
 # Split target database into chunks
-N_SPLITS=128  # Adjust for production (e.g., 128 for large datasets)
+N_SPLITS=288  # Adjust for production (e.g., 128 for large datasets)
 if [ ! -f "mmseqs_db/target_chunks/target_split_0_${N_SPLITS}" ]; then
     echo "  Splitting target database into $N_SPLITS chunks..."
     mmseqs splitdb mmseqs_db/targetDB mmseqs_db/target_chunks/target_split --split $N_SPLITS
