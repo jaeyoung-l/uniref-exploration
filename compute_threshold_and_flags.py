@@ -130,6 +130,12 @@ def main():
     merged.to_csv(output_file, sep="\t", index=False)
     print(f"Final results saved to: {output_file}")
 
+    # Save excluded targets separately
+    excluded = merged[merged["exclude"] == True]
+    excluded_file = WORKDIR / "results/final/excluded_targets.tsv"
+    excluded.to_csv(excluded_file, sep="\t", index=False)
+    print(f"Excluded targets saved to: {excluded_file} ({len(excluded)} targets)")
+
     # Show a few examples
     print(f"\nSample results (top 10 by seq-id):")
     sample = merged.nlargest(10, "seq-id")
