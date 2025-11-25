@@ -59,7 +59,7 @@ def main():
     targets_with_hits = len(merged)
 
     # Take the maximum to ensure we exclude at least all targets with hits
-    target_excluded_total = max(fraction_based_target, targets_with_hits)
+    target_excluded_total = fraction_based_target 
 
     print(f"\nThreshold computation:")
     print(f"  Total targets in dataset: {total_target_count}")
