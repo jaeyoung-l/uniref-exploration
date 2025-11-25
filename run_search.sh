@@ -47,7 +47,7 @@ SCORE_OUT="$WORKDIR/results/per_target/${CHUNK_NAME}.tsv"
 # mkdir -p "$(dirname "$SCORE_OUT")"
 
 # log "Step 1: Running MMseqs2 search..."
-# start_time=$(date +%s)
+start_time=$(date +%s)
 # # Run search: queries vs this target chunk
 # mmseqs search "$QUERY_DB" "$TARGET_CHUNK_DB" "$RESULT_DB" "$TMP_DIR" \
 #   --alignment-mode 3 \
@@ -58,7 +58,7 @@ SCORE_OUT="$WORKDIR/results/per_target/${CHUNK_NAME}.tsv"
 #   --max-seqs 200 \
 #   --threads 1
 
-# search_time=$(( $(date +%s) - start_time ))
+search_time=$(( $(date +%s) - start_time ))
 # log "  MMseqs2 search completed in ${search_time}s"
 
 # log "Step 2: Converting alignments to TSV..."
