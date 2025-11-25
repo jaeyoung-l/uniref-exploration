@@ -117,7 +117,7 @@ fi
 
 # Step 2: Compute threshold and generate final flags
 echo "Step 2: Computing threshold and generating exclusion flags..."
-python3 compute_threshold_and_flags.py
+python3 /home/s5h/mrpython.s5h/projects/uniref-exploration/compute_threshold_and_flags.py
 echo
 
 # Step 3: Show summary
