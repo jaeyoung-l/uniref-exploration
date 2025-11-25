@@ -11,7 +11,7 @@ import sys
 from pathlib import Path
 
 def main():
-    WORKDIR = Path("/workspace/filtering")
+    WORKDIR = Path("/scratch/s5h/mrpython.s5h/output/uniref-exploration")
 
     print("Computing threshold and exclusion flags...")
     print(f"Working directory: {WORKDIR}")
