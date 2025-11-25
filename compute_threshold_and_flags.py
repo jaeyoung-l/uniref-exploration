@@ -93,7 +93,7 @@ def main():
         print(f"  This will exclude the top {target_excluded_total} targets by seq-id")
 
         # Use > threshold to avoid excluding too many in case of ties
-        merged["exclude"] = merged["seq-id"] > threshold
+        merged["exclude"] = merged["seq-id"] >= threshold
 
     final_excluded = merged["exclude"].sum()
     final_fraction_of_total = final_excluded / total_target_count
